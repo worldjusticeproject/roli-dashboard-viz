@@ -10,14 +10,16 @@ const CHART_SIZES = {
   bipanel: { width: '100%', height: 400, maxWidth: '600px' }
 };
 
+// WJP categorical palette in its fixed order - do not reorder.
+// TS_COLORS.line is the first stop (#181878).
 const SERIES_COLORS = [
   TS_COLORS.line,
-  '#BF02AF',
-  '#3366FF',
-  '#FF4D6A',
-  '#FFB52B',
-  '#34C759',
-  '#FF9500',
+  '#BF02AF', // Magenta
+  '#3366FF', // Blue
+  '#FF4D6A', // Pink
+  '#9C89ED', // Violet
+  '#226640', // Green
+  '#FFB52B', // Amber
 ];
 
 function getSeriesColor(index, style) {

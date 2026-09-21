@@ -399,7 +399,7 @@ export default function ROLIDashboard() {
         <div style={{ textAlign: 'center', maxWidth: '500px', padding: '24px' }}>
           <div style={{ fontSize: '18px', fontWeight: '600', color: '#c0392b', marginBottom: '12px' }}>Error Loading Data</div>
           <div style={{ fontSize: '14px', color: COLORS.muted, marginBottom: '16px' }}>{dataError}</div>
-          <button onClick={() => window.location.reload()} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '600', color: 'white', backgroundColor: COLORS.top5, border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+          <button onClick={() => window.location.reload()} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '600', color: 'white', backgroundColor: COLORS.primary, border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
             Retry
           </button>
         </div>
