@@ -16,12 +16,13 @@ const FACTORS = [
   { key: 'f8', label: 'Criminal Justice' }
 ];
 
+// WJP categorical palette in its fixed order - do not reorder.
 const COMPARISON_COLORS = [
-  '#181878', // Dark Navy/Purple
+  '#181878', // Data indigo
   '#BF02AF', // Magenta
   '#3366FF', // Blue
   '#FF4D6A', // Pink
-  '#FFB52B', // Orange
+  '#9C89ED', // Violet
 ];
 
 // Custom Y-axis tick component with line wrapping

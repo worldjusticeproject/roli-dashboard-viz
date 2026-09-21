@@ -37,15 +37,16 @@ VARIABLE_OPTIONS.filter(v => v.value.startsWith('sf')).forEach(sf => {
   };
 });
 
-// Colors for different years
+// Colors for different years.
+// WJP categorical palette in its fixed order - do not reorder.
 const YEAR_COLORS = [
-  '#5C2D91', // Purple (primary)
+  '#181878', // Data indigo
   '#BF02AF', // Magenta
   '#3366FF', // Blue
   '#FF4D6A', // Pink
-  '#FFB52B', // Orange
-  '#34C759', // Green
-  '#FF9500', // Dark Orange
+  '#9C89ED', // Violet
+  '#226640', // Green
+  '#FFB52B', // Amber
 ];
 
 // Custom tick component to show values with year colors + label

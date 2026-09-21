@@ -3,25 +3,46 @@ import PropTypes from 'prop-types';
 import { COLORS, VARIABLE_OPTIONS } from '../config';
 import { getEmbeddedFontCSS, filterByRegion } from '../utils';
 
-// Color scale from red (0) to yellow (0.5) to green (1)
+// WJP divergent scale for index scores ("ROLI Scores"), weaker -> stronger.
+// Magenta/red = weaker, green = stronger; intermediate values interpolate
+// between neighbouring stops.
+const SCORE_RAMP = [
+  '#D40276', '#E10F3C', '#EB5934', '#EF863C', '#F2A241', '#E8AB46',
+  '#DFB44B', '#CCC555', '#90A96A', '#578E7F', '#28594F',
+];
+
+function hexToRgb(hex) {
+  return [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
+}
+
+// Returns [r, g, b] for a 0-1 score on the ramp above.
+function scoreRgb(value) {
+  const v = Math.max(0, Math.min(1, value));
+  const pos = v * (SCORE_RAMP.length - 1);
+  const i = Math.min(Math.floor(pos), SCORE_RAMP.length - 2);
+  const t = pos - i;
+  const from = hexToRgb(SCORE_RAMP[i]);
+  const to = hexToRgb(SCORE_RAMP[i + 1]);
+  return from.map((c, k) => Math.round(c + t * (to[k] - c)));
+}
+
 function getHeatmapColor(value) {
   if (value === null || value === undefined) return '#e0e0e0';
+  const [r, g, b] = scoreRgb(value);
+  return `rgb(${r}, ${g}, ${b})`;
+}
 
-  const v = Math.max(0, Math.min(1, value));
-
-  if (v < 0.5) {
-    const t = v / 0.5;
-    const r = 220;
-    const g = Math.round(80 + t * 140);
-    const b = Math.round(80 - t * 30);
-    return `rgb(${r}, ${g}, ${b})`;
-  } else {
-    const t = (v - 0.5) / 0.5;
-    const r = Math.round(220 - t * 150);
-    const g = Math.round(220 - t * 30);
-    const b = Math.round(50 + t * 70);
-    return `rgb(${r}, ${g}, ${b})`;
-  }
+// This ramp is dark at BOTH ends, so cell labels flip to white wherever the
+// fill is too dark to carry near-black text.
+function getHeatmapTextColor(value) {
+  if (value === null || value === undefined) return '#222221';
+  const [r, g, b] = scoreRgb(value);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? '#222221' : '#ffffff';
 }
 
 export default function HumanRightsHeatmap({
@@ -156,7 +177,7 @@ export default function HumanRightsHeatmap({
         const value = row.factors[factor.key];
         const color = getHeatmapColor(value);
         svg += `<rect x="${x}" y="${y}" width="${cellWidth}" height="${cellHeight - 2}" fill="${color}" rx="3"/>`;
-        svg += `<text x="${x + cellWidth / 2}" y="${y + cellHeight / 2 + 4}" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">${value !== null && value !== undefined ? value.toFixed(2) : '—'}</text>`;
+        svg += `<text x="${x + cellWidth / 2}" y="${y + cellHeight / 2 + 4}" text-anchor="middle" font-size="13" font-weight="600" fill="${getHeatmapTextColor(value)}">${value !== null && value !== undefined ? value.toFixed(2) : '—'}</text>`;
       });
     });
 
@@ -280,7 +301,7 @@ export default function HumanRightsHeatmap({
                       borderLeft: '3px solid white',
                       borderRight: '3px solid white'
                     }}>
-                      <span style={{ fontWeight: '700', color: '#1a1a1a', fontSize: '14px' }}>
+                      <span style={{ fontWeight: '700', color: getHeatmapTextColor(value), fontSize: '14px' }}>
                         {value !== null && value !== undefined ? value.toFixed(2) : '—'}
                       </span>
                     </td>

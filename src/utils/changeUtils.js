@@ -1,35 +1,36 @@
 import { COLORS } from '../config';
 
 /**
+ * WJP divergent scale for change data ("ROLI Percentage Changes").
+ * Six fixed bins, most improving -> most declining. Backgrounds are solid hex
+ * tints (not rgba) so they render identically in the exported SVGs.
+ */
+const CHANGE_BINS = [
+  { min:  4.1, accent: '#181878', bg: '#E3E3EF', text: '#181878' },
+  { min:  2.1, accent: '#7272BC', bg: '#EEEEF7', text: '#181878' },
+  { min:  1.0, accent: '#CCCCFF', bg: '#F9F9FF', text: '#181878' },
+  { min: -2.0, accent: '#FEBECC', bg: '#FFF7F9', text: '#C41229' },
+  { min: -4.0, accent: '#EB6975', bg: '#FDEDEE', text: '#C41229' },
+  { min: -Infinity, accent: '#C41229', bg: '#F8E3E5', text: '#C41229' },
+];
+
+const NEUTRAL = { bg: '#f5f5f5', accent: '#9e9e9e', text: COLORS.muted };
+
+/**
  * Get color scheme based on percentage change
  * @param {number|null} changePercent - The percentage change value
  * @returns {{ bg: string, accent: string, text: string }} Color scheme object
  */
 export function getChangeColor(changePercent) {
   if (changePercent === null || changePercent === undefined || isNaN(changePercent)) {
-    return { bg: '#f5f5f5', accent: '#9e9e9e', text: COLORS.muted };
+    return NEUTRAL;
   }
 
-  if (Math.abs(changePercent) < 1) {
-    // No significant change - neutral gray
-    return { bg: '#f5f5f5', accent: '#9e9e9e', text: COLORS.muted };
-  } else if (changePercent > 0) {
-    // Positive change - green scale
-    const intensity = Math.min(changePercent / 30, 1); // Max intensity at 30%
-    return {
-      bg: `rgba(76, 175, 80, ${0.08 + intensity * 0.12})`,
-      accent: `rgb(${76 - intensity * 30}, ${175 - intensity * 30}, ${80 - intensity * 30})`,
-      text: '#2e7d32'
-    };
-  } else {
-    // Negative change - red scale
-    const intensity = Math.min(Math.abs(changePercent) / 30, 1);
-    return {
-      bg: `rgba(244, 67, 54, ${0.08 + intensity * 0.12})`,
-      accent: `rgb(${244 - intensity * 46}, ${67 - intensity * 27}, ${54 - intensity * 14})`,
-      text: '#c62828'
-    };
-  }
+  // Stable band: changes under 1% in either direction read as "no real change"
+  if (Math.abs(changePercent) < 1) return NEUTRAL;
+
+  const bin = CHANGE_BINS.find(b => changePercent >= b.min);
+  return { bg: bin.bg, accent: bin.accent, text: bin.text };
 }
 
 /**

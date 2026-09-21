@@ -139,8 +139,9 @@ const COLORS = {
   // WJP Brand Colors
   primary: '#5C2D91',      // WJP Purple - for titles and primary actions
   secondary: '#181878',    // WJP Navy - for secondary navigation
-  top5: '#5C2D91',         // Purple for highlights
-  bottom5: '#fa4d57',      // Red for contrast
+  // High-contrast pair (WJP guidelines): used for the two series in Top & Bottom
+  top5: '#181878',         // Data indigo - primary color inside data viz
+  bottom5: '#FF4D6A',      // Paired contrast color
   background: '#FFFFFF',   // Clean white background
   backgroundAlt: '#f8f7f4', // Alternate background for sections
   text: '#1a1a1a',
@@ -151,22 +152,25 @@ const COLORS = {
 
 const TS_COLORS = {
   line: '#181878',
-  axis: '#514e4b',
+  axis: '#666666',
   grid: '#BDBDBD',
   regionalAvg: '#757575',
-  globalAvg: '#5ec6c6'
+  globalAvg: '#00A8A5'
 };
 
-// Factor colors for Country Profile chart (matching WJP style)
+// Factor colors for Country Profile chart.
+// WJP categorical palette, applied in its fixed order - the sequence is curated
+// to maximize contrast between neighbours and stay legible for color-blind
+// viewers, so do not reorder it.
 const FACTOR_COLORS = {
-  f1: '#1a6b6b',  // Constraints on Government Power - Teal
-  f2: '#7cb342',  // Absence of Corruption - Lime green
-  f3: '#00838f',  // Open Government - Cyan/teal
-  f4: '#607d8b',  // Fundamental Rights - Blue grey
-  f5: '#7b1fa2',  // Order and Security - Purple
-  f6: '#43a047',  // Regulatory Enforcement - Green
-  f7: '#fb8c00',  // Civil Justice - Orange
-  f8: '#e53935',  // Criminal Justice - Red
+  f1: '#181878',  // Constraints on Government Power
+  f2: '#BF02AF',  // Absence of Corruption
+  f3: '#3366FF',  // Open Government
+  f4: '#FF4D6A',  // Fundamental Rights
+  f5: '#9C89ED',  // Order and Security
+  f6: '#226640',  // Regulatory Enforcement
+  f7: '#FFB52B',  // Civil Justice
+  f8: '#00A8A5',  // Criminal Justice
 };
 
 // Short labels for profile chart (matching WJP style)
