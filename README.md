@@ -69,10 +69,11 @@ To deploy manually, authenticate with `vercel login`, link this checkout to the
 
 ### Automation troubleshooting
 
-- If Claude Code Review reports `Claude Code is not installed on this repository`,
-  install or grant the [Claude GitHub App](https://github.com/apps/claude) access
-  to `worldjusticeproject/roli-dashboard-viz`. The OAuth secret alone does not
-  grant the app access after a repository transfer.
+- Claude workflows explicitly use the repository-scoped GitHub Actions token,
+  so GitHub authentication does not depend on a Claude App installation following
+  a repository transfer. Claude authentication still requires a valid
+  `CLAUDE_CODE_OAUTH_TOKEN` secret. Reviews have pull-request write permission
+  to publish their results, with read-only access to repository contents.
 - Branch synchronization recreates `design` from `main` if the source branch was
   deleted after merging. It preserves any commits unique to `design`.
 - The WJP palette applies to charts, change legends, SVG exports, and ranking
