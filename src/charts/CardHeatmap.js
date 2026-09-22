@@ -144,21 +144,21 @@ export default function CardHeatmap({
     svg += `<text x="${padding}" y="${legendY}" font-size="11" font-weight="600" fill="${COLORS.muted}">Change:</text>`;
 
     // Legend items
-    svg += `<rect x="${padding + 60}" y="${legendY - 10}" width="20" height="14" rx="2" fill="rgba(244, 67, 54, 0.2)" stroke="#ef5350" stroke-width="1"/>`;
-    svg += `<text x="${padding + 85}" y="${legendY}" font-size="10" fill="#c62828">Declined</text>`;
+    svg += `<rect x="${padding + 60}" y="${legendY - 10}" width="20" height="14" rx="2" fill="#FDEDEE" stroke="#EB6975" stroke-width="1"/>`;
+    svg += `<text x="${padding + 85}" y="${legendY}" font-size="10" fill="#C41229">Declined</text>`;
 
     svg += `<rect x="${padding + 145}" y="${legendY - 10}" width="20" height="14" rx="2" fill="#f5f5f5" stroke="#bdbdbd" stroke-width="1"/>`;
     svg += `<text x="${padding + 170}" y="${legendY}" font-size="10" fill="${COLORS.muted}">No change</text>`;
 
-    svg += `<rect x="${padding + 245}" y="${legendY - 10}" width="20" height="14" rx="2" fill="rgba(76, 175, 80, 0.2)" stroke="#4caf50" stroke-width="1"/>`;
-    svg += `<text x="${padding + 270}" y="${legendY}" font-size="10" fill="#2e7d32">Improved</text>`;
+    svg += `<rect x="${padding + 245}" y="${legendY - 10}" width="20" height="14" rx="2" fill="#EEEEF7" stroke="#7272BC" stroke-width="1"/>`;
+    svg += `<text x="${padding + 270}" y="${legendY}" font-size="10" fill="#181878">Improved</text>`;
 
     // Arrow legend
-    svg += `<text x="${padding + 360}" y="${legendY}" font-size="10" fill="#2e7d32">↑↑ +10%+</text>`;
-    svg += `<text x="${padding + 420}" y="${legendY}" font-size="10" fill="#4caf50">↑ Improved</text>`;
+    svg += `<text x="${padding + 360}" y="${legendY}" font-size="10" fill="#181878">↑↑ +10%+</text>`;
+    svg += `<text x="${padding + 420}" y="${legendY}" font-size="10" fill="#7272BC">↑ Improved</text>`;
     svg += `<text x="${padding + 500}" y="${legendY}" font-size="10" fill="${COLORS.muted}">→ Stable</text>`;
-    svg += `<text x="${padding + 560}" y="${legendY}" font-size="10" fill="#ef5350">↓ Declined</text>`;
-    svg += `<text x="${padding + 640}" y="${legendY}" font-size="10" fill="#c62828">↓↓ -10%+</text>`;
+    svg += `<text x="${padding + 560}" y="${legendY}" font-size="10" fill="#EB6975">↓ Declined</text>`;
+    svg += `<text x="${padding + 640}" y="${legendY}" font-size="10" fill="#C41229">↓↓ -10%+</text>`;
 
     svg += '</svg>';
 
@@ -315,8 +315,8 @@ export default function CardHeatmap({
 
           {/* Negative side */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ width: '24px', height: '16px', backgroundColor: 'rgba(244, 67, 54, 0.2)', borderRadius: '3px', border: '1px solid #ef5350' }} />
-            <span style={{ fontSize: '11px', color: '#c62828', fontWeight: '500' }}>Declined</span>
+            <div style={{ width: '24px', height: '16px', backgroundColor: '#FDEDEE', borderRadius: '3px', border: '1px solid #EB6975' }} />
+            <span style={{ fontSize: '11px', color: '#C41229', fontWeight: '500' }}>Declined</span>
           </div>
 
           {/* Neutral */}
@@ -327,18 +327,18 @@ export default function CardHeatmap({
 
           {/* Positive side */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ width: '24px', height: '16px', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderRadius: '3px', border: '1px solid #4caf50' }} />
-            <span style={{ fontSize: '11px', color: '#2e7d32', fontWeight: '500' }}>Improved</span>
+            <div style={{ width: '24px', height: '16px', backgroundColor: '#EEEEF7', borderRadius: '3px', border: '1px solid #7272BC' }} />
+            <span style={{ fontSize: '11px', color: '#181878', fontWeight: '500' }}>Improved</span>
           </div>
         </div>
 
         {/* Arrow indicators */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '12px', color: '#2e7d32' }}>↑↑ +10%+</span>
-          <span style={{ fontSize: '12px', color: '#4caf50' }}>↑ +1% to +10%</span>
+          <span style={{ fontSize: '12px', color: '#181878' }}>↑↑ +10%+</span>
+          <span style={{ fontSize: '12px', color: '#7272BC' }}>↑ +1% to +10%</span>
           <span style={{ fontSize: '12px', color: COLORS.muted }}>→ ±1%</span>
-          <span style={{ fontSize: '12px', color: '#ef5350' }}>↓ -1% to -10%</span>
-          <span style={{ fontSize: '12px', color: '#c62828' }}>↓↓ -10%+</span>
+          <span style={{ fontSize: '12px', color: '#EB6975' }}>↓ -1% to -10%</span>
+          <span style={{ fontSize: '12px', color: '#C41229' }}>↓↓ -10%+</span>
         </div>
       </div>
     </div>

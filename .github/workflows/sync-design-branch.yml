@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 # Ensure only one sync runs at a time to prevent race conditions
 concurrency:
@@ -33,10 +34,18 @@ jobs:
       - name: Sync design branch
         run: |
           # Fetch all latest changes
-          git fetch origin
+          git fetch --prune origin
+
+          # GitHub can delete the source branch after a PR is merged.
+          # Recreate the shared design branch from main when that happens.
+          if ! git show-ref --verify --quiet refs/remotes/origin/design; then
+            git push origin refs/remotes/origin/main:refs/heads/design
+            echo "Recreated design from main."
+            exit 0
+          fi
 
           # Check if design and main are already identical
-          if git diff --quiet origin/main origin/design; then
+          if git merge-base --is-ancestor origin/main origin/design; then
             echo "✅ Branches are already in sync. Nothing to do."
             exit 0
           fi

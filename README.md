@@ -54,6 +54,31 @@ This writes `roli_data.json` to both `data/` (canonical copy) and `public/` (ser
 
 The dashboard is automatically deployed to GitHub Pages on every push to `main`.
 
+**Vercel:** [https://roli-dashboard.vercel.app](https://roli-dashboard.vercel.app)
+
+Vercel is a separate deployment. A successful GitHub Pages workflow does not
+update this URL. Its existing Vercel project must be connected to
+`worldjusticeproject/roli-dashboard-viz`, with `main` as the production branch.
+The Vercel build command sets `PUBLIC_URL=/`; GitHub Pages uses the
+`homepage` subdirectory in `package.json`. Runtime data and assets use the
+same deployment-specific base path.
+
+To deploy manually, authenticate with `vercel login`, link this checkout to the
+**existing** project that owns `roli-dashboard.vercel.app`, and run
+`vercel --prod`. Do not create another project for this dashboard.
+
+### Automation troubleshooting
+
+- If Claude Code Review reports `Claude Code is not installed on this repository`,
+  install or grant the [Claude GitHub App](https://github.com/apps/claude) access
+  to `worldjusticeproject/roli-dashboard-viz`. The OAuth secret alone does not
+  grant the app access after a repository transfer.
+- Branch synchronization recreates `design` from `main` if the source branch was
+  deleted after merging. It preserves any commits unique to `design`.
+- The WJP palette applies to charts, change legends, SVG exports, and ranking
+  indicators. Purple UI controls remain separate from the indigo chart palette.
+  Change cards retain the dashboard's existing neutral band below 1% in magnitude.
+
 ## Collaboration Workflow
 
 This project uses a two-branch workflow:
