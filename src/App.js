@@ -160,7 +160,7 @@ export default function ROLIDashboard() {
 
     // Fetch fresh data
     setIsLoadingData(true);
-    fetch('/roli_data.json')
+    fetch(`${process.env.PUBLIC_URL}/roli_data.json`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to load data');
         return res.json();

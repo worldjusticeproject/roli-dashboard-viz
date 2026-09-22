@@ -141,8 +141,8 @@ export default function RankingTable({
   // Get rank change display
   const getRankChangeDisplay = (change) => {
     if (change === null) return { text: '—', color: COLORS.muted };
-    if (change > 0) return { text: `▲${change}`, color: '#2e7d32' };
-    if (change < 0) return { text: `▼${Math.abs(change)}`, color: '#c62828' };
+    if (change > 0) return { text: `▲${change}`, color: '#181878' };
+    if (change < 0) return { text: `▼${Math.abs(change)}`, color: '#C41229' };
     return { text: '—', color: COLORS.muted };
   };
 
@@ -445,10 +445,10 @@ export default function RankingTable({
         <span style={{ fontSize: '11px', color: COLORS.muted }}>
           Rank change compared to {baseYear}:
         </span>
-        <span style={{ fontSize: '11px', color: '#2e7d32', fontWeight: '500' }}>
+        <span style={{ fontSize: '11px', color: '#181878', fontWeight: '500' }}>
           ▲ Moved up
         </span>
-        <span style={{ fontSize: '11px', color: '#c62828', fontWeight: '500' }}>
+        <span style={{ fontSize: '11px', color: '#C41229', fontWeight: '500' }}>
           ▼ Moved down
         </span>
         <span style={{ fontSize: '11px', color: COLORS.muted }}>
