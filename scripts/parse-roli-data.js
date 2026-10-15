@@ -8,7 +8,7 @@ const XLSX = require('xlsx');
 const path = require('path');
 const fs = require('fs');
 
-const EXCEL_PATH = path.resolve(__dirname, '..', 'data', '2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx');
+const EXCEL_PATH = path.resolve(__dirname, '..', 'data', 'FINAL_2026_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx');
 const OUTPUT_PATH = path.resolve(__dirname, '..', 'data', 'roli_data.json');
 const PUBLIC_PATH = path.resolve(__dirname, '..', 'public', 'roli_data.json');
 
@@ -58,7 +58,7 @@ function expandYearLabel(rawYear) {
     }
   }
 
-  return [year];
+  return /^\d{4}$/.test(year) ? [year] : [];
 }
 
 function makeMetricSnapshot(entry) {

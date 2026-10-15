@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { COLORS, VARIABLE_OPTIONS } from '../config';
+import { ACTIVE_YEAR, COLORS, VARIABLE_OPTIONS } from '../config';
 import { getEmbeddedFontCSS, filterByRegion } from '../utils';
 
 // WJP divergent scale for index scores ("ROLI Scores"), weaker -> stronger.
@@ -47,7 +47,7 @@ function getHeatmapTextColor(value) {
 
 export default function HumanRightsHeatmap({
   allData,
-  selectedYear = '2025',
+  selectedYear = ACTIVE_YEAR,
   selectedRegion = 'global',
   selectedFactors = ['roli', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8']
 }) {

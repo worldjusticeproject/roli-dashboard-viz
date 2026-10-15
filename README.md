@@ -5,7 +5,7 @@ An interactive dashboard for the **World Justice Project Rule of Law Index (ROLI
 ## Features
 
 - **Nine visualization types**:
-  - **Time Series** — Line chart showing 2015-2025 trends with regional averages
+  - **Time Series** — Line chart showing 2015-2026 trends with regional averages
   - **Country Profiles** — Detailed country performance breakdown
   - **Top & Bottom Performers** — Dynamic bar chart that adapts when regions have fewer than 10 countries
   - **Radar Chart** — Multi-year overlay with selectable factors and subfactors (minimum 3)
@@ -40,13 +40,13 @@ npm start
 
 ### Re-generate data from Excel
 
-The dataset is parsed from the official WJP Historical Data Excel file. If you update the source file in `data/`, re-run the parser to regenerate the JSON:
+The current release uses `data/FINAL_2026_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx`, covering 143 countries in 2026. The JSON bundle retains 2012–2026 historical records; dashboard controls show 2015–2026. If you update the source file in `data/`, re-run the parser to regenerate the JSON:
 
 ```bash
 npm run parse-data
 ```
 
-This writes `roli_data.json` to both `data/` (canonical copy) and `public/` (served by the app).
+This writes `roli_data.json` to both `data/` (canonical copy) and `public/` (served by the app), including scores, year-to-year comparisons, regional averages, and metadata. See [the data update guide](docs/maintainer/DATA_UPDATES.md) for validation and release steps.
 
 ## Live Demo
 

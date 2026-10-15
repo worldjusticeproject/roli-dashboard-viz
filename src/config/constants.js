@@ -1,4 +1,4 @@
-const ACTIVE_YEAR = '2025';
+const ACTIVE_YEAR = '2026';
 
 const REGION_OPTIONS = [
   { value: 'global',                          label: 'Global' },

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Interactive React dashboard for the World Justice Project Rule of Law Index (ROLI). Visualizes global rule of law data across 8 factors and 44 sub-factors from 2015-2025, with support for regional filtering and multiple chart types.
+Interactive React dashboard for the World Justice Project Rule of Law Index (ROLI). Visualizes global rule of law data across 8 factors and 44 sub-factors from 2015-2026, with support for regional filtering and multiple chart types.
 
 ## Collaborator Roles
 
@@ -89,7 +89,7 @@ npm run audit:fix
 
 **Source → Parser → JSON → App**
 
-1. Excel file: `data/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx`
+1. Excel file: `data/FINAL_2026_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx`
 2. Parser: `scripts/parse-roli-data.js` reads "Historical Data" sheet, normalizes country names, rounds scores
 3. Writes to two locations:
    - `data/roli_data.json` (canonical, gitignored)
@@ -108,7 +108,7 @@ src/
 ├── index.js                  # React entry point
 │
 ├── charts/                   # All chart components
-│   ├── TimeSeriesChart.js    # Line chart showing 2015-2025 trends
+│   ├── TimeSeriesChart.js    # Line chart showing 2015-2026 trends
 │   ├── CountryProfileChart.js # Country performance breakdown
 │   ├── TopBottomChart.js     # Horizontal bar chart (top/bottom performers)
 │   ├── RadarChartView.js     # Multi-year radar with factor selection
@@ -201,7 +201,7 @@ const CHART_TABS = [
 ### Constants Configuration
 
 **`src/config/constants.js`** exports:
-- `ACTIVE_YEAR` - Default year filter (currently '2025'). Update when new data is released
+- `ACTIVE_YEAR` - Default year filter (currently '2026'). Update when new data is released
 - `REGION_OPTIONS` - 10 regions including 'global', 'European Union', and 'EU Enlargement'
 - `EU_COUNTRIES` - Array of 27 EU member state names for European Union filtering
 - `EU_ENLARGEMENT_COUNTRIES` - Array of 10 EU candidate countries for EU Enlargement filtering
@@ -222,7 +222,7 @@ const CHART_TABS = [
 - Shows regional average reference line
 
 **TimeSeriesChart**
-- 2015-2025 data range (configurable via yearRange prop)
+- 2015-2026 data range (configurable via yearRange prop)
 - Supports individual countries or regional/global averages
 - Fixed Y-axis scale: 0 to 1
 
@@ -283,7 +283,7 @@ Both use click-outside-to-close and are state-controlled via `isInfoModalOpen`/`
 
 ### Column Mapping (Excel → JSON)
 
-Parser uses fixed column indices from "Historical Data" sheet:
+Parser uses fixed column indices from "Historical Data" sheet. It skips headers using valid year labels, expands combined editions (2012-2013 and 2017-2018), and retains 2012–2026 in the JSON bundle; dashboard controls start at 2015:
 - Col 0: Country name (normalized via lookup map)
 - Col 1: Year
 - Col 4: Region
@@ -325,7 +325,7 @@ All scores rounded to 3 decimal places.
 ```js
 const CACHE_KEY = 'roli_data_cache';
 const CACHE_VERSION_KEY = 'roli_data_version';
-const CURRENT_VERSION = '2025.5'; // Update when data changes
+const CURRENT_VERSION = '2026.1'; // Update when data changes
 ```
 - First visit: Fetches data → saves to localStorage
 - Subsequent visits: Instant load from cache
@@ -365,7 +365,7 @@ Full details in `docs/security/SECURITY.md`.
 2. Run `npm run parse-data`
 3. Update `ACTIVE_YEAR` in `src/config/constants.js`
 4. Update `CURRENT_VERSION` in `src/App.js` to invalidate localStorage cache (e.g., '2025.1' → '2026.1')
-5. Add new year option to year dropdowns in `App.js` if needed
+5. Year dropdowns, chart defaults, radar years, and the time-series endpoint derive from `ACTIVE_YEAR`. Follow `docs/maintainer/DATA_UPDATES.md` for validation.
 
 ### Modifying Colors
 

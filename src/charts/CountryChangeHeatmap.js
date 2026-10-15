@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { COLORS, FACTOR_COLORS, FACTOR_SHORT_LABELS, SUBFACTOR_SHORT_LABELS } from '../config';
+import { ACTIVE_YEAR, COLORS, FACTOR_COLORS, FACTOR_SHORT_LABELS, SUBFACTOR_SHORT_LABELS } from '../config';
 import { getEmbeddedFontCSS, getChangeColor, getChangeArrow, getChangeSortBucket } from '../utils';
 
 // Factor structure with their subfactors
@@ -20,7 +20,7 @@ export default function CountryChangeHeatmap({
   averages,
   selectedCountry = '__region_global',
   selectedFactor = 'f1',
-  selectedYear = '2025',
+  selectedYear = ACTIVE_YEAR,
   baseYear = '2015'
 }) {
   // Get country/region label

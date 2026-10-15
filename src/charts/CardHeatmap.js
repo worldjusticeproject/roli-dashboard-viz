@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { COLORS, VARIABLE_OPTIONS } from '../config';
+import { ACTIVE_YEAR, COLORS, VARIABLE_OPTIONS } from '../config';
 import { getEmbeddedFontCSS, filterByRegion, getChangeColor, getChangeArrow, getChangeSortBucket } from '../utils';
 
 export default function CardHeatmap({
   allData,
-  selectedYear = '2025',
+  selectedYear = ACTIVE_YEAR,
   baseYear = '2015',
   selectedRegion = 'global',
   selectedVariable = 'roli'

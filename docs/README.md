@@ -39,6 +39,8 @@ This guide will walk you through:
 
 ## 🔧 For Main User/Maintainer
 
+**2026 data release and future updates:** [`maintainer/DATA_UPDATES.md`](maintainer/DATA_UPDATES.md)
+
 **Daily workflow:** [`maintainer/MAIN_USER_WORKFLOW.md`](maintainer/MAIN_USER_WORKFLOW.md)
 
 **Branch synchronization:** [`maintainer/SYNC_GUIDE.md`](maintainer/SYNC_GUIDE.md)

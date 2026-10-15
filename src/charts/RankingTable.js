@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { COLORS } from '../config';
+import { ACTIVE_YEAR, COLORS } from '../config';
 import { getEmbeddedFontCSS, filterByRegion } from '../utils';
 
 // Sort directions
@@ -9,7 +9,7 @@ const SORT_DESC = 'desc';
 
 export default function RankingTable({
   allData,
-  selectedYear = '2025',
+  selectedYear = ACTIVE_YEAR,
   baseYear = '2015',
   selectedRegion = 'global',
   selectedVariable = 'roli',

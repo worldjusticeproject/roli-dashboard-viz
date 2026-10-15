@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useCallback, memo } from 'react';
 import PropTypes from 'prop-types';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts';
-import { TS_COLORS } from '../config';
+import { ACTIVE_YEAR, TS_COLORS } from '../config';
 import { prepareSVGClone, embedFonts, downloadSVG as downloadSVGHelper, createLegendItem } from '../utils';
 import { ChartCard } from '../components';
 
@@ -28,7 +28,7 @@ function getSeriesColor(index, style) {
   return SERIES_COLORS[index % SERIES_COLORS.length];
 }
 
-function TimeSeriesChart({ series = [], referenceSeries = [], variable, label, subtitle, yearRange = [2015, 2025] }) {
+function TimeSeriesChart({ series = [], referenceSeries = [], variable, label, subtitle, yearRange = [2015, Number(ACTIVE_YEAR)] }) {
   const chartRef = useRef(null);
   const [exportMode, setExportMode] = useState(null);
 
