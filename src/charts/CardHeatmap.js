@@ -1,14 +1,28 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { ACTIVE_YEAR, COLORS, VARIABLE_OPTIONS } from '../config';
-import { getEmbeddedFontCSS, filterByRegion, getChangeColor, getChangeArrow, getChangeSortBucket } from '../utils';
+import {
+  getEmbeddedFontCSS,
+  filterByRegion,
+  getChangeColor,
+  getChangeArrow,
+  sortByChange,
+  getTopBottomByChange
+} from '../utils';
+
+const TOP_GROUP_NOTE = 'Highest percentage change';
+const BOTTOM_GROUP_NOTE = 'Lowest percentage change';
 
 export default function CardHeatmap({
   allData,
   selectedYear = ACTIVE_YEAR,
   baseYear = '2015',
   selectedRegion = 'global',
-  selectedVariable = 'roli'
+  selectedVariable = 'roli',
+  topCount = 0,
+  bottomCount = 0,
+  onTopCountChange,
+  onBottomCountChange
 }) {
   // Get variable label
   const variableLabel = useMemo(() => {
@@ -56,24 +70,44 @@ export default function CardHeatmap({
     });
 
     // Sort by change: biggest improvements first, then neutral, then declines.
-    result.sort((a, b) => {
-      const changeA = a.change !== null ? a.change * 100 : null;
-      const changeB = b.change !== null ? b.change * 100 : null;
-      const bucketA = getChangeSortBucket(changeA);
-      const bucketB = getChangeSortBucket(changeB);
-
-      if (bucketA !== bucketB) return bucketA - bucketB;
-
-      if (changeA === null && changeB === null) return a.country.localeCompare(b.country);
-      if (changeA === null) return 1;
-      if (changeB === null) return -1;
-      if (changeA !== changeB) return changeB - changeA;
-
-      return a.country.localeCompare(b.country);
-    });
-
-    return result;
+    return sortByChange(result);
   }, [allData, selectedYear, baseYear, selectedRegion, selectedVariable]);
+
+  const isTopBottomView = topCount > 0 || bottomCount > 0;
+
+  // Both groups keep the descending order of the full grid, so `bottom` ends
+  // with the largest decline.
+  const { top, bottom } = useMemo(
+    () => getTopBottomByChange(cardData, { topCount, bottomCount }),
+    [cardData, topCount, bottomCount]
+  );
+
+  // One group per card section: the full grid, or the selected movers.
+  const groups = useMemo(() => {
+    if (!isTopBottomView) {
+      return [{ key: 'all', title: null, note: null, items: cardData }];
+    }
+
+    const selected = [];
+    if (top.length > 0) {
+      selected.push({ key: 'top', title: `Top ${top.length}`, note: TOP_GROUP_NOTE, items: top });
+    }
+    if (bottom.length > 0) {
+      selected.push({ key: 'bottom', title: `Bottom ${bottom.length}`, note: BOTTOM_GROUP_NOTE, items: bottom });
+    }
+    return selected;
+  }, [isTopBottomView, cardData, top, bottom]);
+
+  // Describes the active selection in the subtitle and the exported SVG
+  const selectionLabel = useMemo(() => {
+    if (!isTopBottomView) return null;
+    if (top.length > 0 && bottom.length > 0) return `Top ${top.length} and bottom ${bottom.length} by change`;
+    if (top.length > 0) return `Top ${top.length} by change`;
+    if (bottom.length > 0) return `Bottom ${bottom.length} by change`;
+    return 'Not enough countries with data for this selection';
+  }, [isTopBottomView, top.length, bottom.length]);
+
+  const subtitle = `${regionLabel} — Change from ${baseYear} to ${selectedYear}${selectionLabel ? ` · ${selectionLabel}` : ''}`;
 
   // Download SVG function
   const downloadSVG = async () => {
@@ -86,10 +120,25 @@ export default function CardHeatmap({
     const headerHeight = 80;
     const legendHeight = 60;
     const cardsPerRow = 5;
+    const groupTitleHeight = 40;
+    const groupSpacing = 24;
 
-    const rows = Math.ceil(cardData.length / cardsPerRow);
     const width = padding * 2 + cardsPerRow * cardWidth + (cardsPerRow - 1) * cardGap;
-    const height = headerHeight + rows * cardHeight + (rows - 1) * cardGap + legendHeight + padding * 2;
+
+    // Measure the card sections so the canvas fits exactly what is on screen
+    const sections = groups.map(group => {
+      const rows = Math.ceil(group.items.length / cardsPerRow);
+      return {
+        ...group,
+        rows,
+        height: (group.title ? groupTitleHeight : 0) + rows * cardHeight + Math.max(rows - 1, 0) * cardGap
+      };
+    });
+    const bodyHeight = sections.reduce(
+      (total, section, index) => total + section.height + (index > 0 ? groupSpacing : 0),
+      0
+    );
+    const height = headerHeight + bodyHeight + legendHeight + padding * 2;
 
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
       <style>
@@ -100,47 +149,70 @@ export default function CardHeatmap({
 
       <!-- Title -->
       <text x="${width/2}" y="32" text-anchor="middle" font-size="18" font-weight="700" fill="${COLORS.primary}">${variableLabel}</text>
-      <text x="${width/2}" y="54" text-anchor="middle" font-size="13" fill="${COLORS.muted}">${regionLabel} — Change from ${baseYear} to ${selectedYear}</text>
+      <text x="${width/2}" y="54" text-anchor="middle" font-size="13" fill="${COLORS.muted}">${subtitle}</text>
     `;
 
-    // Draw cards
-    cardData.forEach((item, index) => {
-      const col = index % cardsPerRow;
-      const row = Math.floor(index / cardsPerRow);
-      const x = padding + col * (cardWidth + cardGap);
-      const y = headerHeight + row * (cardHeight + cardGap);
-
+    // Draw one card at the given top-left corner
+    const drawCard = (item, x, y) => {
       const changePercent = item.change !== null ? item.change * 100 : null;
       const colors = getChangeColor(changePercent);
       const arrow = getChangeArrow(changePercent);
+      let card = '';
 
       // Card background with rounded corners
-      svg += `<rect x="${x}" y="${y}" width="${cardWidth}" height="${cardHeight}" rx="8" fill="${colors.bg}" stroke="#e5e5e5" stroke-width="1"/>`;
+      card += `<rect x="${x}" y="${y}" width="${cardWidth}" height="${cardHeight}" rx="8" fill="${colors.bg}" stroke="#e5e5e5" stroke-width="1"/>`;
 
       // Color accent bar at top
-      svg += `<rect x="${x}" y="${y}" width="${cardWidth}" height="6" rx="8" fill="${colors.accent}"/>`;
-      svg += `<rect x="${x}" y="${y + 4}" width="${cardWidth}" height="4" fill="${colors.accent}"/>`;
+      card += `<rect x="${x}" y="${y}" width="${cardWidth}" height="6" rx="8" fill="${colors.accent}"/>`;
+      card += `<rect x="${x}" y="${y + 4}" width="${cardWidth}" height="4" fill="${colors.accent}"/>`;
 
       // Country name
       const countryName = item.country.length > 20 ? item.country.substring(0, 18) + '...' : item.country;
-      svg += `<text x="${x + 12}" y="${y + 28}" font-size="12" font-weight="600" fill="${COLORS.text}">${countryName}</text>`;
+      card += `<text x="${x + 12}" y="${y + 28}" font-size="12" font-weight="600" fill="${COLORS.text}">${countryName}</text>`;
 
       // Percentage change
       const changeText = changePercent !== null
         ? `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}%`
         : '—';
-      svg += `<text x="${x + 12}" y="${y + 55}" font-size="22" font-weight="700" fill="${colors.text}">${changeText}</text>`;
-      svg += `<text x="${x + 95}" y="${y + 55}" font-size="16" fill="${colors.text}">${arrow}</text>`;
+      card += `<text x="${x + 12}" y="${y + 55}" font-size="22" font-weight="700" fill="${colors.text}">${changeText}</text>`;
+      card += `<text x="${x + 95}" y="${y + 55}" font-size="16" fill="${colors.text}">${arrow}</text>`;
 
       // Score details
-      svg += `<text x="${x + 12}" y="${y + 78}" font-size="10" fill="${COLORS.muted}">${baseYear}:</text>`;
-      svg += `<text x="${x + 40}" y="${y + 78}" font-size="11" font-weight="700" fill="${COLORS.text}">${item.baseValue !== null ? item.baseValue.toFixed(2) : '—'}</text>`;
-      svg += `<text x="${x + cardWidth - 46}" y="${y + 78}" text-anchor="end" font-size="10" fill="${COLORS.muted}">${selectedYear}:</text>`;
-      svg += `<text x="${x + cardWidth - 12}" y="${y + 78}" text-anchor="end" font-size="11" font-weight="700" fill="${COLORS.text}">${item.value !== null ? item.value.toFixed(2) : '—'}</text>`;
+      card += `<text x="${x + 12}" y="${y + 78}" font-size="10" fill="${COLORS.muted}">${baseYear}:</text>`;
+      card += `<text x="${x + 40}" y="${y + 78}" font-size="11" font-weight="700" fill="${COLORS.text}">${item.baseValue !== null ? item.baseValue.toFixed(2) : '—'}</text>`;
+      card += `<text x="${x + cardWidth - 46}" y="${y + 78}" text-anchor="end" font-size="10" fill="${COLORS.muted}">${selectedYear}:</text>`;
+      card += `<text x="${x + cardWidth - 12}" y="${y + 78}" text-anchor="end" font-size="11" font-weight="700" fill="${COLORS.text}">${item.value !== null ? item.value.toFixed(2) : '—'}</text>`;
+
+      return card;
+    };
+
+    // Draw each section: optional group title, then its cards
+    let cursorY = headerHeight;
+    sections.forEach((section, index) => {
+      if (index > 0) cursorY += groupSpacing;
+
+      if (section.title) {
+        const noteX = padding + section.title.length * 8.2 + 14; // approximate width of the bold title
+        svg += `<text x="${padding}" y="${cursorY + 18}" font-size="14" font-weight="700" fill="${COLORS.primary}">${section.title}</text>`;
+        svg += `<text x="${noteX}" y="${cursorY + 18}" font-size="11" fill="${COLORS.muted}">${section.note}</text>`;
+        cursorY += groupTitleHeight;
+      }
+
+      section.items.forEach((item, cardIndex) => {
+        const col = cardIndex % cardsPerRow;
+        const row = Math.floor(cardIndex / cardsPerRow);
+        svg += drawCard(
+          item,
+          padding + col * (cardWidth + cardGap),
+          cursorY + row * (cardHeight + cardGap)
+        );
+      });
+
+      cursorY += section.rows * cardHeight + Math.max(section.rows - 1, 0) * cardGap;
     });
 
     // Legend
-    const legendY = headerHeight + rows * cardHeight + (rows - 1) * cardGap + 30;
+    const legendY = headerHeight + bodyHeight + 30;
     svg += `<text x="${padding}" y="${legendY}" font-size="11" font-weight="600" fill="${COLORS.muted}">Change:</text>`;
 
     // Legend items
@@ -165,138 +237,196 @@ export default function CardHeatmap({
     const blob = new Blob([svg], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
+    const scopeSuffix = isTopBottomView
+      ? `-${[top.length > 0 ? `top${top.length}` : null, bottom.length > 0 ? `bottom${bottom.length}` : null].filter(Boolean).join('-')}`
+      : '';
     a.href = url;
-    a.download = `card-heatmap-change-${selectedVariable}-${selectedRegion}-${baseYear}-to-${selectedYear}.svg`;
+    a.download = `card-heatmap-change-${selectedVariable}-${selectedRegion}-${baseYear}-to-${selectedYear}${scopeSuffix}.svg`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
+  const toggleButtonStyle = (isActive) => ({
+    padding: '8px 14px',
+    fontSize: '13px',
+    fontWeight: '500',
+    color: isActive ? 'white' : COLORS.primary,
+    backgroundColor: isActive ? COLORS.primary : 'white',
+    border: `1px solid ${COLORS.primary}`,
+    borderRadius: '4px',
+    cursor: 'pointer'
+  });
+
+  // Toggles are independent: top and bottom can be on together or on their own.
+  // Clicking the active count switches that group off; the other count replaces it.
+  const renderToggle = (label, count, activeCount, onChange) => (
+    <button
+      key={label}
+      type="button"
+      onClick={() => onChange?.(activeCount === count ? 0 : count)}
+      aria-pressed={activeCount === count}
+      title={`Show the ${label.toLowerCase()} countries by percentage change`}
+      style={toggleButtonStyle(activeCount === count)}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div style={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e5e5e5', overflow: 'hidden' }}>
       {/* Header */}
-      <div style={{ padding: '20px 24px', borderBottom: '1px solid #e5e5e5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
+      <div className="card-heatmap-header" style={{ padding: '20px 24px', borderBottom: '1px solid #e5e5e5', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+        <div className="card-heatmap-heading" style={{ minWidth: 0 }}>
           <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: COLORS.primary }}>
             {variableLabel}
           </h2>
           <p style={{ margin: '4px 0 0', fontSize: '13px', color: COLORS.muted }}>
-            {regionLabel} — Change from {baseYear} to {selectedYear}
+            {subtitle}
           </p>
         </div>
-        <button
-          onClick={downloadSVG}
-          style={{
-            padding: '8px 16px',
-            fontSize: '13px',
-            fontWeight: '500',
-            color: COLORS.primary,
-            backgroundColor: 'white',
-            border: `1px solid ${COLORS.primary}`,
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Download SVG
-        </button>
+        <div className="card-heatmap-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="card-heatmap-toggle-group" role="group" aria-label="Top countries by change" style={{ display: 'flex', gap: '6px' }}>
+            {renderToggle('Top 5', 5, topCount, onTopCountChange)}
+            {renderToggle('Top 10', 10, topCount, onTopCountChange)}
+          </div>
+          <div className="card-heatmap-toggle-group" role="group" aria-label="Bottom countries by change" style={{ display: 'flex', gap: '6px' }}>
+            {renderToggle('Bottom 5', 5, bottomCount, onBottomCountChange)}
+            {renderToggle('Bottom 10', 10, bottomCount, onBottomCountChange)}
+          </div>
+          <button
+            type="button"
+            onClick={downloadSVG}
+            style={{
+              padding: '8px 16px',
+              fontSize: '13px',
+              fontWeight: '500',
+              color: COLORS.primary,
+              backgroundColor: 'white',
+              border: `1px solid ${COLORS.primary}`,
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Download SVG
+          </button>
+        </div>
       </div>
 
       {/* Card Grid */}
-      <div style={{
-        padding: '24px',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-        gap: '16px'
-      }}>
-        {cardData.map((item) => {
-          const changePercent = item.change !== null ? item.change * 100 : null;
-          const colors = getChangeColor(changePercent);
-          const arrow = getChangeArrow(changePercent);
-
-          return (
-            <div
-              key={item.country}
-              style={{
-                backgroundColor: colors.bg,
-                borderRadius: '12px',
-                padding: '0',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                border: '1px solid #e8e8e8',
-                overflow: 'hidden',
-                transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                cursor: 'default'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
-              }}
-            >
-              {/* Color accent bar */}
-              <div style={{
-                height: '6px',
-                backgroundColor: colors.accent,
-                width: '100%'
-              }} />
-
-              <div style={{ padding: '14px 16px' }}>
-                {/* Country name */}
-                <div style={{
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: COLORS.text,
-                  marginBottom: '8px',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}>
-                  {item.country}
-                </div>
-
-                {/* Percentage Change - Main Value */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'baseline',
-                  gap: '6px',
-                  marginBottom: '8px'
-                }}>
-                  <span style={{
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: colors.text,
-                    lineHeight: 1
-                  }}>
-                    {changePercent !== null
-                      ? `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}%`
-                      : '—'}
-                  </span>
-                  <span style={{
-                    fontSize: '18px',
-                    color: colors.text
-                  }}>
-                    {arrow}
-                  </span>
-                </div>
-
-                {/* Score details */}
-                <div style={{
-                  fontSize: '11px',
-                  display: 'flex',
-                  justifyContent: 'space-between'
-                }}>
-                  <span style={{ color: COLORS.muted }}>
-                    {baseYear}: <span style={{ fontWeight: '700', color: COLORS.text }}>{item.baseValue !== null ? item.baseValue.toFixed(2) : '—'}</span>
-                  </span>
-                  <span style={{ color: COLORS.muted }}>
-                    {selectedYear}: <span style={{ fontWeight: '700', color: COLORS.text }}>{item.value !== null ? item.value.toFixed(2) : '—'}</span>
-                  </span>
-                </div>
+      <div style={{ padding: '24px' }}>
+        {groups.length === 0 && (
+          <p style={{ margin: 0, fontSize: '13px', color: COLORS.muted }}>
+            Not enough countries with {baseYear} data in {regionLabel} to build these groups.
+          </p>
+        )}
+        {groups.map((group, groupIndex) => (
+          <div key={group.key} style={{ marginTop: groupIndex > 0 ? '28px' : 0 }}>
+            {group.title && (
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: COLORS.primary }}>
+                  {group.title}
+                </h3>
+                <span style={{ fontSize: '12px', color: COLORS.muted }}>{group.note}</span>
               </div>
+            )}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+              gap: '16px'
+            }}>
+              {group.items.map((item) => {
+                const changePercent = item.change !== null ? item.change * 100 : null;
+                const colors = getChangeColor(changePercent);
+                const arrow = getChangeArrow(changePercent);
+
+                return (
+                  <div
+                    key={item.country}
+                    style={{
+                      backgroundColor: colors.bg,
+                      borderRadius: '12px',
+                      padding: '0',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                      border: '1px solid #e8e8e8',
+                      overflow: 'hidden',
+                      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                      cursor: 'default'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
+                    }}
+                  >
+                    {/* Color accent bar */}
+                    <div style={{
+                      height: '6px',
+                      backgroundColor: colors.accent,
+                      width: '100%'
+                    }} />
+
+                    <div style={{ padding: '14px 16px' }}>
+                      {/* Country name */}
+                      <div style={{
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        color: COLORS.text,
+                        marginBottom: '8px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {item.country}
+                      </div>
+
+                      {/* Percentage Change - Main Value */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: '6px',
+                        marginBottom: '8px'
+                      }}>
+                        <span style={{
+                          fontSize: '28px',
+                          fontWeight: '700',
+                          color: colors.text,
+                          lineHeight: 1
+                        }}>
+                          {changePercent !== null
+                            ? `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}%`
+                            : '—'}
+                        </span>
+                        <span style={{
+                          fontSize: '18px',
+                          color: colors.text
+                        }}>
+                          {arrow}
+                        </span>
+                      </div>
+
+                      {/* Score details */}
+                      <div style={{
+                        fontSize: '11px',
+                        display: 'flex',
+                        justifyContent: 'space-between'
+                      }}>
+                        <span style={{ color: COLORS.muted }}>
+                          {baseYear}: <span style={{ fontWeight: '700', color: COLORS.text }}>{item.baseValue !== null ? item.baseValue.toFixed(2) : '—'}</span>
+                        </span>
+                        <span style={{ color: COLORS.muted }}>
+                          {selectedYear}: <span style={{ fontWeight: '700', color: COLORS.text }}>{item.value !== null ? item.value.toFixed(2) : '—'}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
 
       {/* Legend */}
@@ -350,5 +480,9 @@ CardHeatmap.propTypes = {
   selectedYear: PropTypes.string,
   baseYear: PropTypes.string,
   selectedRegion: PropTypes.string,
-  selectedVariable: PropTypes.string
+  selectedVariable: PropTypes.string,
+  topCount: PropTypes.number,
+  bottomCount: PropTypes.number,
+  onTopCountChange: PropTypes.func,
+  onBottomCountChange: PropTypes.func
 };

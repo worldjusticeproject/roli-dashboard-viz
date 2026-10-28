@@ -238,6 +238,31 @@
     flex-shrink: 0 !important;
   }
 
+  /* Change Heatmap header: title keeps the full width, buttons wrap below it */
+  .card-heatmap-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .card-heatmap-heading {
+    width: 100% !important;
+  }
+
+  .card-heatmap-actions {
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .card-heatmap-actions button {
+    flex: 1 1 auto !important;
+    padding: 8px 10px !important;
+  }
+
+  .card-heatmap-toggle-group {
+    flex: 1 1 auto !important;
+  }
+
   /* Button adjustments */
   button {
     font-size: 13px !important;
@@ -274,6 +299,20 @@
   .chart-toggle-container button {
     font-size: 13px !important;
     padding: 10px 14px !important;
+  }
+
+  /* Change Heatmap header: one full-width row per control group */
+  .card-heatmap-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .card-heatmap-toggle-group {
+    width: 100% !important;
+  }
+
+  .card-heatmap-toggle-group button {
+    flex: 1 1 0 !important;
   }
 
   .chart-card {

@@ -124,6 +124,8 @@ export default function ROLIDashboard() {
   const [cardHeatmapBaseYear, setCardHeatmapBaseYear] = useState('2015');
   const [cardHeatmapRegion, setCardHeatmapRegion] = useState('global');
   const [cardHeatmapVariable, setCardHeatmapVariable] = useState('roli');
+  const [cardHeatmapTopCount, setCardHeatmapTopCount] = useState(0); // 0 = full view; 5 or 10 = show that many biggest improvements
+  const [cardHeatmapBottomCount, setCardHeatmapBottomCount] = useState(0); // 0 = full view; 5 or 10 = show that many biggest declines
   const [countryChangeCountry, setCountryChangeCountry] = useState('__region_global');
   const [countryChangeFactor, setCountryChangeFactor] = useState('f1');
   const [countryChangeYear, setCountryChangeYear] = useState(ACTIVE_YEAR);
@@ -1505,6 +1507,10 @@ export default function ROLIDashboard() {
                 baseYear={cardHeatmapBaseYear}
                 selectedRegion={cardHeatmapRegion}
                 selectedVariable={cardHeatmapVariable}
+                topCount={cardHeatmapTopCount}
+                bottomCount={cardHeatmapBottomCount}
+                onTopCountChange={setCardHeatmapTopCount}
+                onBottomCountChange={setCardHeatmapBottomCount}
               />
             )}
             {chartType === 'countrychange' && (

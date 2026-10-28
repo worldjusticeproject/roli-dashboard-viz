@@ -135,7 +135,10 @@ src/
 │   ├── index.js              # Barrel export
 │   ├── svgExport.js          # Font fetching for SVG export
 │   ├── svgExportHelpers.js   # SVG legend and element helpers
-│   └── regionFilter.js       # Region filtering helpers (filterByRegion, matchesRegion)
+│   ├── regionFilter.js       # Region filtering helpers (filterByRegion, matchesRegion)
+│   ├── changeUtils.js        # Change color/arrow/sort-bucket helpers
+│   ├── dataBundle.js         # Data bundle normalization + averages/metadata lookups
+│   └── topBottomByChange.js  # Change ordering + top/bottom selection (getTopBottomByChange)
 │
 └── styles/                   # CSS files
     └── responsive.css        # Mobile-responsive styles
@@ -248,6 +251,12 @@ const CHART_TABS = [
 **CardHeatmap (Change Heatmap)**
 - Card-based visualization showing percentage change between two years
 - Color coding: green (improved), red (declined), gray (stable ±1%)
+- Header toggles narrow the view to the biggest movers under the current filters: `Top 5` / `Top 10` and `Bottom 5` / `Bottom 10`
+  - The two dimensions are independent (either group alone, or both together); within a dimension the counts are mutually exclusive, and clicking the active count returns that group to the full view
+  - State lives in `App.js` as `cardHeatmapTopCount` / `cardHeatmapBottomCount` (`0` = off), passed down as `topCount` / `bottomCount` with `onTopCountChange` / `onBottomCountChange`
+  - Selection comes from `getTopBottomByChange()` in `src/utils/topBottomByChange.js`, which reuses the card grid's own order (`sortByChange` / `compareByChange`, alphabetical tiebreak), drops countries without a base-year score (`change === null`), and caps each group at `floor(countries with data / 2)` like TopBottomChart so groups never overlap in small regions
+  - Both groups keep the full view's descending order, so `bottom` ends with the largest decline (same convention as `slice(-n)` in TopBottomChart). A region with few declines can show stable or positive cards in the bottom group; they keep their real `getChangeColor` / `getChangeArrow` styling
+  - `Download SVG` exports exactly what is on screen, with a group heading per section and the active selection named in the subtitle
 
 **CountryChangeHeatmap (Country Change)**
 - Shows one country/region + one factor → displays all subfactors as change cards

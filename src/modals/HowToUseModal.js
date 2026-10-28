@@ -166,6 +166,7 @@ export default function HowToUseModal({ isOpen, onClose }) {
             <li style={{ marginBottom: '8px' }}>Select a <strong>base year</strong> and <strong>current year</strong> to compare.</li>
             <li style={{ marginBottom: '8px' }}>Choose a <strong>region</strong> and the <strong>indicator</strong> (overall score, factor, or sub-factor).</li>
             <li style={{ marginBottom: '8px' }}>Cards show <strong>percentage change</strong> with color coding: <strong>green = improved</strong>, <strong>red = declined</strong>, <strong>gray = stable</strong>.</li>
+            <li style={{ marginBottom: '8px' }}>Use the <strong>Top 5 / Top 10</strong> and <strong>Bottom 5 / Bottom 10</strong> buttons in the chart header to narrow the view to the biggest movers. They work independently, so you can show one group on its own or both side by side, and the SVG export matches what you see.</li>
             <li style={{ marginBottom: '8px' }}>Use it to quickly identify which countries have made <strong>progress or regressed</strong> over a specific period.</li>
           </ul>
 
